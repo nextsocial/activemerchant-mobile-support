@@ -652,7 +652,7 @@ module ActiveMerchant #:nodoc:
       }
 
       def commit_purchase_setup(money, options)
-        if options[:custom][:is_mobile]
+        if options[:is_mobile]
           commit_mobile_sale({money: money, options: options})
         else
           commit 'SetExpressCheckout', build_setup_request('Sale', money, options)
