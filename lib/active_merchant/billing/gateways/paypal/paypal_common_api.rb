@@ -680,9 +680,11 @@ module ActiveMerchant #:nodoc:
             :CANCELURL => purchase_options[:cancel_return_url],
             :NOTIFYURL => purchase_options[:notify_url],
 
-            :METHOD  => 'SetExpressCheckout',
-            :MAXAMT  => purchase_options[:max_amount],
-            :VERSION => purchase_options[:callback_version],
+            :METHOD       => 'SetExpressCheckout',
+            :MAXAMT       => purchase_options[:max_amount],
+            :VERSION      => purchase_options[:callback_version],
+            :SOLUTIONTYPE => 'Sole',
+            :LANDINGPAGE  => purchase_options[:landing_page] || 'Billing',
 
             :L_PAYMENTREQUEST_0_NAME0   => purchase_item[:name],
             :L_PAYMENTREQUEST_0_NUMBER0 => purchase_item[:number],
