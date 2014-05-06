@@ -666,6 +666,7 @@ module ActiveMerchant #:nodoc:
 
       def commit_mobile_sale(params)
         purchase_options = params[:options]
+        shipping_options = params[:options][:shipping_options]
         purchase_item    = params[:options][:items][0]
 
         request = {
@@ -673,12 +674,14 @@ module ActiveMerchant #:nodoc:
             :PWD       => AppConfig.gateways.paypal_express.password,
             :SIGNATURE => AppConfig.gateways.paypal_express.signature,
 
-            :SUBJECT => merchant_email,
+            :SUBJECT                                => merchant_email,
             :PAYMENTREQUEST_0_SELLERPAYPALACCOUNTID => merchant_email,
 
-            :RETURNURL => purchase_options[:return_url],
-            :CANCELURL => purchase_options[:cancel_return_url],
-            :NOTIFYURL => purchase_options[:notify_url],
+            :RETURNURL       => purchase_options[:return_url],
+            :CANCELURL       => purchase_options[:cancel_return_url],
+            :NOTIFYURL       => purchase_options[:notify_url],
+            :CALLBACK        => purchase_options[:callback_url],
+            :CALLBACKTIMEOUT => purchase_options[:callback_timeout],
 
             :METHOD       => 'SetExpressCheckout',
             :MAXAMT       => purchase_options[:max_amount],
@@ -702,6 +705,10 @@ module ActiveMerchant #:nodoc:
 
             :PAYMENTREQUEST_0_PAYMENTACTION  => 'Sale',
             :PAYMENTREQUEST_0_CURRENCYCODE   => purchase_options[:currency],
+
+            :L_SHIPPINGOPTIONNAME0      => shipping_options[:name],
+            :L_SHIPPINGOPTIONAMOUNT0    => shipping_options[:amount],
+            :L_SHIPPINGOPTIONISDEFAULT0 => shipping_options[:default],
         }
 
         response = ssl_post(endpoint_mobile_url, request.to_query, @options[:headers])
