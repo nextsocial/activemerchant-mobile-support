@@ -446,7 +446,27 @@ module ActiveMerchant #:nodoc:
         error_messages = []
         error_codes = []
 
-        xml = REXML::Document.new(xml)
+
+        # ADDED ENCODING SUPPORT
+        Rails.logger.debug("\n\n *********** \n\n")
+        valid_xml = begin
+          string = xml
+
+          # remove broken tags
+          %w(ScheduledShippingDate ScheduledShippingPeriod).each do |tag|
+            next unless (start_position = string =~ /<#{ tag }/)
+
+            end_position = (string =~ /<\/#{ tag }>/) + "</#{ tag }>".length
+            string[start_position...end_position] = ''
+          end
+
+          string.encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+        end
+        Rails.logger.debug("PaypalCommonAPI::XML=#{valid_xml}")
+        Rails.logger.debug("\n\n *********** \n\n")
+
+
+        xml = REXML::Document.new(valid_xml)
         if root = REXML::XPath.first(xml, "//#{action}Response")
           root.elements.each do |node|
             case node.name
