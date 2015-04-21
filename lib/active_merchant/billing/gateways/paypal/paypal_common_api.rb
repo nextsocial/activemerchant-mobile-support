@@ -726,11 +726,6 @@ module ActiveMerchant #:nodoc:
           request["L_PAYMENTREQUEST_#{ index }_QTY#{ index }"]    = item[:quantity]
         end
 
-
-
-        request
-
-
         response = ssl_post(endpoint_mobile_url, request.to_query, @options[:headers])
         if response.present?
           response = Rack::Utils.parse_nested_query(response)
