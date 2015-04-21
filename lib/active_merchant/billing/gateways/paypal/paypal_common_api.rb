@@ -1,6 +1,6 @@
 module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
-                 # This module is included in both PaypalGateway and PaypalExpressGateway
+    # This module is included in both PaypalGateway and PaypalExpressGateway
     module PaypalCommonAPI
 
       require "rexml/document"
@@ -686,7 +686,7 @@ module ActiveMerchant #:nodoc:
 
       def commit_mobile_sale(params)
         purchase_options = params[:options]
-        purchase_item    = params[:options][:items][0]
+        purchase_items   = params[:options][:items]
 
         request = {
             :USER      => AppConfig.gateways.paypal_express.login,
@@ -706,14 +706,8 @@ module ActiveMerchant #:nodoc:
             :SOLUTIONTYPE => 'Sole',
             :LANDINGPAGE  => purchase_options[:landing_page] || 'Billing',
 
-            :L_PAYMENTREQUEST_0_NAME0   => purchase_item[:name],
-            :L_PAYMENTREQUEST_0_NUMBER0 => purchase_item[:number],
-            :L_PAYMENTREQUEST_0_DESC0   => purchase_item[:description],
-            :L_PAYMENTREQUEST_0_AMT0    => to_decimal(purchase_item[:amount]),
-            :L_PAYMENTREQUEST_0_QTY0    => 1,
-
-            :PAYMENTREQUEST_0_ITEMAMT      => to_decimal(purchase_item[:amount]),
-            :PAYMENTREQUEST_0_TAXAMT       => to_decimal(purchase_item[:tax]),
+            :PAYMENTREQUEST_0_ITEMAMT      => to_decimal(purchase_options[:subtotal]),
+            :PAYMENTREQUEST_0_TAXAMT       => to_decimal(purchase_options[:tax]),
             :PAYMENTREQUEST_0_SHIPPINGAMT  => to_decimal(purchase_options[:shipping]),
             :PAYMENTREQUEST_0_HANDLINGAMT  => to_decimal(purchase_options[:handling]),
             :PAYMENTREQUEST_0_SHIPDISCAMT  => 0,
@@ -723,6 +717,19 @@ module ActiveMerchant #:nodoc:
             :PAYMENTREQUEST_0_PAYMENTACTION  => 'Sale',
             :PAYMENTREQUEST_0_CURRENCYCODE   => purchase_options[:currency],
         }
+
+        purchase_items.each_with_index do |item, index|
+          request["L_PAYMENTREQUEST_#{ index }_NAME#{ index }"]   = item[:name],
+          request["L_PAYMENTREQUEST_#{ index }_NUMBER#{ index }"] = item[:number],
+          request["L_PAYMENTREQUEST_#{ index }_DESC#{ index }"]   = item[:description],
+          request["L_PAYMENTREQUEST_#{ index }_AMT#{ index }"]    = to_decimal(item[:amount]),
+          request["L_PAYMENTREQUEST_#{ index }_QTY#{ index }"]    = item[:quantity]
+        end
+
+
+
+        request
+
 
         response = ssl_post(endpoint_mobile_url, request.to_query, @options[:headers])
         if response.present?
